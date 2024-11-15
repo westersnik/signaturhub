@@ -5,7 +5,11 @@ export interface Shipment {
   status: 'pending' | 'signed' | 'delivered';
   driverName?: string;
   signature?: string;
+  signatureName?: string;
   address?: string;
+  company?: string;
+  partialDelivery?: boolean;
+  actualTimeOfArrival?: string;
 }
 
 export interface ShipmentItem {
@@ -13,6 +17,7 @@ export interface ShipmentItem {
   name: string;
   quantity: number;
   unit: string;
+  delivered?: number;
 }
 
 export interface User {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import SignatureCanvas from '@/components/SignatureCanvas';
 import { Shipment } from '@/lib/types';
 import { toast } from 'sonner';
@@ -16,6 +17,7 @@ const MOCK_SHIPMENTS: Shipment[] = [
       { id: '2', name: 'Package B', quantity: 1, unit: 'pallet' },
     ],
     status: 'pending',
+    company: 'Aker Solutions',
   },
   {
     id: '2',
@@ -24,6 +26,7 @@ const MOCK_SHIPMENTS: Shipment[] = [
       { id: '3', name: 'Package C', quantity: 3, unit: 'boxes' },
     ],
     status: 'pending',
+    company: 'Aker Solutions',
   },
 ];
 
@@ -32,26 +35,55 @@ const DriverView = () => {
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [selectedShipments, setSelectedShipments] = useState<string[]>([]);
   const [showSignature, setShowSignature] = useState(false);
+  const [signatureName, setSignatureName] = useState('');
+  const [partialDeliveries, setPartialDeliveries] = useState<Record<string, Record<string, number>>>({});
 
   const handleSign = (shipment: Shipment) => {
+    if (!signatureName) {
+      toast.error('Please enter a signature name');
+      return;
+    }
     setSelectedShipment(shipment);
     setShowSignature(true);
   };
 
   const handleSaveSignature = async (signatureData: string) => {
     if (selectedShipment) {
+      const actualTimeOfArrival = new Date().toLocaleString();
       const updatedShipments = shipments.map((s) =>
         s.id === selectedShipment.id
-          ? { ...s, status: 'signed' as const, signature: signatureData }
+          ? {
+              ...s,
+              status: 'signed' as const,
+              signature: signatureData,
+              signatureName,
+              actualTimeOfArrival,
+              items: s.items.map((item) => ({
+                ...item,
+                delivered: partialDeliveries[s.id]?.[item.id] ?? item.quantity,
+              })),
+            }
           : s
       );
       setShipments(updatedShipments);
       setShowSignature(false);
       setSelectedShipment(null);
       
-      toast.success('Shipment signed successfully');
+      toast.success(`Delivery signed by ${signatureName} for ${selectedShipment.company}`, {
+        description: `Actual time of arrival: ${actualTimeOfArrival}`,
+      });
       console.log('Sending email to daniel@invig.no');
     }
+  };
+
+  const handlePartialDeliveryChange = (shipmentId: string, itemId: string, value: number) => {
+    setPartialDeliveries((prev) => ({
+      ...prev,
+      [shipmentId]: {
+        ...(prev[shipmentId] || {}),
+        [itemId]: value,
+      },
+    }));
   };
 
   const toggleShipmentSelection = (shipmentId: string) => {
@@ -85,12 +117,20 @@ const DriverView = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary">Today's Shipments</h1>
-          {selectedShipments.length > 0 && (
-            <Button onClick={createManifest} className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Create Manifest ({selectedShipments.length})
-            </Button>
-          )}
+          <div className="space-x-4">
+            <Input
+              placeholder="Enter signature name"
+              value={signatureName}
+              onChange={(e) => setSignatureName(e.target.value)}
+              className="w-48"
+            />
+            {selectedShipments.length > 0 && (
+              <Button onClick={createManifest} className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Create Manifest ({selectedShipments.length})
+              </Button>
+            )}
+          </div>
         </div>
         
         {showSignature && (
@@ -118,6 +158,7 @@ const DriverView = () => {
                   <div>
                     <h3 className="font-semibold">Shipment #{shipment.id}</h3>
                     <p className="text-sm text-gray-500">{shipment.date}</p>
+                    <p className="text-sm text-gray-500">Company: {shipment.company}</p>
                   </div>
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${
@@ -137,9 +178,23 @@ const DriverView = () => {
                       className="flex justify-between items-center border-b py-2"
                     >
                       <span>{item.name}</span>
-                      <span className="text-gray-600">
-                        {item.quantity} {item.unit}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max={item.quantity}
+                          value={partialDeliveries[shipment.id]?.[item.id] ?? item.quantity}
+                          onChange={(e) => 
+                            handlePartialDeliveryChange(
+                              shipment.id,
+                              item.id,
+                              Math.min(parseInt(e.target.value) || 0, item.quantity)
+                            )
+                          }
+                          className="w-20"
+                        />
+                        <span className="text-gray-600">/ {item.quantity} {item.unit}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
