@@ -5,6 +5,7 @@ export interface Shipment {
   status: 'pending' | 'signed' | 'delivered';
   driverName?: string;
   signature?: string;
+  address?: string;
 }
 
 export interface ShipmentItem {

@@ -2,18 +2,66 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shipment, ShipmentItem } from '@/lib/types';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const MOCK_SHIPMENTS: Shipment[] = [
+  {
+    id: '1',
+    date: '2024-01-20',
+    items: [{ id: '1', name: 'Electronics Package', quantity: 3, unit: 'boxes' }],
+    status: 'pending',
+    driverName: 'Driver 1',
+    address: '123 Main St, Oslo'
+  },
+  {
+    id: '2',
+    date: '2024-01-20',
+    items: [{ id: '2', name: 'Office Supplies', quantity: 5, unit: 'boxes' }],
+    status: 'pending',
+    driverName: 'Driver 2',
+    address: '456 Park Ave, Bergen'
+  },
+  {
+    id: '3',
+    date: '2024-01-21',
+    items: [{ id: '3', name: 'Furniture', quantity: 2, unit: 'pallets' }],
+    status: 'pending',
+    driverName: 'Driver 3',
+    address: '789 Oak Rd, Trondheim'
+  },
+  {
+    id: '4',
+    date: '2024-01-21',
+    items: [{ id: '4', name: 'Medical Supplies', quantity: 4, unit: 'boxes' }],
+    status: 'pending',
+    driverName: 'Driver 1',
+    address: '321 Pine St, Stavanger'
+  },
+  {
+    id: '5',
+    date: '2024-01-22',
+    items: [{ id: '5', name: 'Construction Materials', quantity: 1, unit: 'pallet' }],
+    status: 'pending',
+    driverName: 'Driver 2',
+    address: '654 Elm St, Tromsø'
+  }
+];
+
 const Dashboard = () => {
-  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [shipments, setShipments] = useState<Shipment[]>(MOCK_SHIPMENTS);
   const [newShipment, setNewShipment] = useState<{
     items: ShipmentItem[];
     date: string;
+    driverName?: string;
+    address: string;
   }>({
     items: [],
     date: new Date().toISOString().split('T')[0],
+    driverName: undefined,
+    address: '',
   });
 
   const addItem = () => {
@@ -53,17 +101,31 @@ const Dashboard = () => {
       return;
     }
 
+    if (!newShipment.driverName) {
+      toast.error('Please select a driver');
+      return;
+    }
+
+    if (!newShipment.address) {
+      toast.error('Please enter a delivery address');
+      return;
+    }
+
     const shipment: Shipment = {
       id: (shipments.length + 1).toString(),
       date: newShipment.date,
       items: newShipment.items,
       status: 'pending',
+      driverName: newShipment.driverName,
+      address: newShipment.address,
     };
 
     setShipments((prev) => [...prev, shipment]);
     setNewShipment({
       items: [],
       date: new Date().toISOString().split('T')[0],
+      driverName: undefined,
+      address: '',
     });
     toast.success('Shipment created successfully');
   };
@@ -86,6 +148,40 @@ const Dashboard = () => {
                 value={newShipment.date}
                 onChange={(e) =>
                   setNewShipment((prev) => ({ ...prev, date: e.target.value }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Driver
+              </label>
+              <Select
+                value={newShipment.driverName}
+                onValueChange={(value) =>
+                  setNewShipment((prev) => ({ ...prev, driverName: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a driver" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Driver 1">Driver 1</SelectItem>
+                  <SelectItem value="Driver 2">Driver 2</SelectItem>
+                  <SelectItem value="Driver 3">Driver 3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Delivery Address
+              </label>
+              <Input
+                placeholder="Enter delivery address"
+                value={newShipment.address}
+                onChange={(e) =>
+                  setNewShipment((prev) => ({ ...prev, address: e.target.value }))
                 }
               />
             </div>
@@ -143,12 +239,14 @@ const Dashboard = () => {
                 <div>
                   <h3 className="font-semibold">Shipment #{shipment.id}</h3>
                   <p className="text-sm text-gray-500">{shipment.date}</p>
+                  <p className="text-sm text-gray-500">Driver: {shipment.driverName}</p>
+                  <p className="text-sm text-gray-500">Address: {shipment.address}</p>
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
                     shipment.status === 'signed'
-                      ? 'bg-success/20 text-success'
-                      : 'bg-secondary/20 text-secondary'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-blue-100 text-blue-800'
                   }`}
                 >
                   {shipment.status}
