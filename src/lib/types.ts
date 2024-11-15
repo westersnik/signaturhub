@@ -9,6 +9,7 @@ export interface Shipment {
   address?: string;
   project?: string;
   transportCompany?: string;
+  company?: string;
   partialDelivery?: boolean;
   actualTimeOfArrival?: string;
 }
