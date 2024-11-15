@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -11,6 +12,13 @@ const Index = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check for admin credentials
+    if (email === "Admin" && password === "Admin") {
+      navigate("/dashboard");
+      return;
+    }
+
     // For demo, we'll just redirect based on email domain
     if (email.includes("company")) {
       navigate("/dashboard");
@@ -29,10 +37,10 @@ const Index = () => {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Email</label>
+            <label className="text-sm font-medium text-gray-700">Username</label>
             <Input
-              type="email"
-              placeholder="Enter your email"
+              type="text"
+              placeholder="Enter your username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
