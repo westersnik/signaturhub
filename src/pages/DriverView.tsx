@@ -39,15 +39,16 @@ const DriverView = () => {
   const [partialDeliveries, setPartialDeliveries] = useState<Record<string, Record<string, number>>>({});
 
   const handleSign = (shipment: Shipment) => {
-    if (!signatureName) {
-      toast.error('Please enter a signature name');
-      return;
-    }
     setSelectedShipment(shipment);
     setShowSignature(true);
   };
 
   const handleSaveSignature = async (signatureData: string) => {
+    if (!signatureName) {
+      toast.error('Please enter a signature name');
+      return;
+    }
+
     if (selectedShipment) {
       const actualTimeOfArrival = new Date().toLocaleString();
       const updatedShipments = shipments.map((s) =>
@@ -118,12 +119,6 @@ const DriverView = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary">Today's Shipments</h1>
           <div className="space-x-4">
-            <Input
-              placeholder="Enter signature name"
-              value={signatureName}
-              onChange={(e) => setSignatureName(e.target.value)}
-              className="w-48"
-            />
             {selectedShipments.length > 0 && (
               <Button onClick={createManifest} className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -137,9 +132,20 @@ const DriverView = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-md p-6">
               <h2 className="text-xl font-semibold mb-4">Sign Shipment</h2>
+              <div className="space-y-4 mb-4">
+                <Input
+                  placeholder="Enter signature name"
+                  value={signatureName}
+                  onChange={(e) => setSignatureName(e.target.value)}
+                  className="w-full"
+                />
+              </div>
               <SignatureCanvas
                 onSave={handleSaveSignature}
-                onCancel={() => setShowSignature(false)}
+                onCancel={() => {
+                  setShowSignature(false);
+                  setSignatureName('');
+                }}
               />
             </Card>
           </div>
