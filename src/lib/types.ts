@@ -7,7 +7,8 @@ export interface Shipment {
   signature?: string;
   signatureName?: string;
   address?: string;
-  company?: string;
+  project?: string;
+  transportCompany?: string;
   partialDelivery?: boolean;
   actualTimeOfArrival?: string;
 }

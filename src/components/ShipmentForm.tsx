@@ -17,13 +17,15 @@ export const ShipmentForm = ({ setShipments }: ShipmentFormProps) => {
     date: string;
     driverName?: string;
     address: string;
-    company?: string;
+    project?: string;
+    transportCompany?: string;
   }>({
     items: [],
     date: new Date().toISOString().split('T')[0],
     driverName: undefined,
     address: '',
-    company: undefined,
+    project: undefined,
+    transportCompany: undefined,
   });
 
   const addItem = () => {
@@ -68,8 +70,13 @@ export const ShipmentForm = ({ setShipments }: ShipmentFormProps) => {
       return;
     }
 
-    if (!newShipment.company) {
-      toast.error('Please select a company');
+    if (!newShipment.project) {
+      toast.error('Please select a project');
+      return;
+    }
+
+    if (!newShipment.transportCompany) {
+      toast.error('Please select a transport company');
       return;
     }
 
@@ -87,7 +94,8 @@ export const ShipmentForm = ({ setShipments }: ShipmentFormProps) => {
         status: 'pending',
         driverName: newShipment.driverName,
         address: newShipment.address,
-        company: newShipment.company,
+        project: newShipment.project,
+        transportCompany: newShipment.transportCompany,
       },
     ]);
 
@@ -96,7 +104,8 @@ export const ShipmentForm = ({ setShipments }: ShipmentFormProps) => {
       date: new Date().toISOString().split('T')[0],
       driverName: undefined,
       address: '',
-      company: undefined,
+      project: undefined,
+      transportCompany: undefined,
     });
     
     toast.success('Shipment created successfully');
@@ -144,20 +153,41 @@ export const ShipmentForm = ({ setShipments }: ShipmentFormProps) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Company
+            Project
           </label>
           <Select
-            value={newShipment.company}
+            value={newShipment.project}
             onValueChange={(value) =>
-              setNewShipment((prev) => ({ ...prev, company: value }))
+              setNewShipment((prev) => ({ ...prev, project: value }))
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a company" />
+              <SelectValue placeholder="Select a project" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Aker Solutions">Aker Solutions</SelectItem>
               <SelectItem value="Equinor">Equinor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Transport Company
+          </label>
+          <Select
+            value={newShipment.transportCompany}
+            onValueChange={(value) =>
+              setNewShipment((prev) => ({ ...prev, transportCompany: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a transport company" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Schenker">Schenker</SelectItem>
+              <SelectItem value="Royal Transport">Royal Transport</SelectItem>
+              <SelectItem value="Tenden Transport">Tenden Transport</SelectItem>
             </SelectContent>
           </Select>
         </div>
